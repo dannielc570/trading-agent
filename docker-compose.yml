@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: trading-platform-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./.env:/app/.env
+    command: uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      - DATABASE_URL=sqlite:///./data/trading_platform.db
+    restart: unless-stopped
+
+  dashboard:
+    build: .
+    container_name: trading-platform-dashboard
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+      - ./.env:/app/.env
+    command: streamlit run src/dashboard/app.py --server.port 8501 --server.address 0.0.0.0
+    environment:
+      - DATABASE_URL=sqlite:///./data/trading_platform.db
+    restart: unless-stopped
+    depends_on:
+      - api
+
+  scheduler:
+    build: .
+    container_name: trading-platform-scheduler
+    volumes:
+      - ./data:/app/data
+      - ./.env:/app/.env
+    command: python -m src.scheduler.main
+    environment:
+      - DATABASE_URL=sqlite:///./data/trading_platform.db
+    restart: unless-stopped
+    depends_on:
+      - api
+
+volumes:
+  data:
