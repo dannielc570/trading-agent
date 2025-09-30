@@ -11,7 +11,7 @@ This module contains the main research agent that continuously:
 
 from .main_agent import ResearchAgent
 from .knowledge_base import KnowledgeBase
-from .strategy_discovery import StrategyDiscoverer
+from .strategy_discoverer import StrategyDiscoverer
 from .improvement_engine import ImprovementEngine
 
 __all__ = [
