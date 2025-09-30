@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Strategy Platform - Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 30px 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        .header h1 {
+            color: #2d3748;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1.1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+
+        .stat-card h3 {
+            color: #718096;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-card .label {
+            color: #a0aec0;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #2d3748;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h2::before {
+            content: "📊";
+            font-size: 1.8rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        th:first-child {
+            border-radius: 10px 0 0 0;
+        }
+
+        th:last-child {
+            border-radius: 0 10px 0 0;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #e2e8f0;
+            transition: background-color 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background-color: #f7fafc;
+        }
+
+        td {
+            padding: 15px;
+            color: #4a5568;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge.positive {
+            background-color: #c6f6d5;
+            color: #22543d;
+        }
+
+        .badge.negative {
+            background-color: #fed7d7;
+            color: #742a2a;
+        }
+
+        .badge.neutral {
+            background-color: #e2e8f0;
+            color: #2d3748;
+        }
+
+        .status {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status.completed { background-color: #48bb78; }
+        .status.tested { background-color: #ed8936; }
+        .status.optimized { background-color: #4299e1; }
+        .status.live { background-color: #f56565; }
+
+        .loading {
+            text-align: center;
+            color: #718096;
+            padding: 40px;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-bottom: 20px;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #a0aec0;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🚀 Trading Strategy Platform</h1>
+            <p>Real-time performance analytics and strategy monitoring</p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Strategies</h3>
+                <div class="value" id="total-strategies">-</div>
+                <div class="label">Discovered & Created</div>
+            </div>
+            <div class="stat-card">
+                <h3>Backtests Run</h3>
+                <div class="value" id="total-backtests">-</div>
+                <div class="label"><span id="completed-backtests">-</span> Completed</div>
+            </div>
+            <div class="stat-card">
+                <h3>Best Return</h3>
+                <div class="value" id="best-return">-</div>
+                <div class="label" id="best-strategy">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Avg Sharpe Ratio</h3>
+                <div class="value" id="avg-sharpe">-</div>
+                <div class="label">Risk-Adjusted Performance</div>
+            </div>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="content-grid">
+            <!-- Strategy Leaderboard -->
+            <div class="card">
+                <button class="refresh-btn" onclick="loadData()">🔄 Refresh Data</button>
+                <h2>Strategy Leaderboard</h2>
+                <div id="strategies-table">
+                    <div class="loading">Loading strategies...</div>
+                </div>
+            </div>
+
+            <!-- Asset Performance -->
+            <div class="card">
+                <h2>Asset Performance</h2>
+                <div id="assets-table">
+                    <div class="loading">Loading asset data...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Backtests -->
+        <div class="card">
+            <h2>Recent Backtests</h2>
+            <div class="chart-container">
+                <canvas id="performance-chart"></canvas>
+            </div>
+            <div id="backtests-table" style="margin-top: 30px;">
+                <div class="loading">Loading backtests...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API calls
+        async function fetchData(endpoint) {
+            try {
+                const response = await fetch(endpoint);
+                return await response.json();
+            } catch (error) {
+                console.error(`Error fetching ${endpoint}:`, error);
+                return null;
+            }
+        }
+
+        async function loadStats() {
+            const stats = await fetchData('/api/stats');
+            if (stats) {
+                document.getElementById('total-strategies').textContent = stats.total_strategies;
+                document.getElementById('total-backtests').textContent = stats.total_backtests;
+                document.getElementById('completed-backtests').textContent = stats.completed_backtests;
+                document.getElementById('best-return').textContent = `${stats.best_return}%`;
+                document.getElementById('best-strategy').textContent = stats.best_strategy || 'No data yet';
+                document.getElementById('avg-sharpe').textContent = stats.avg_sharpe.toFixed(2);
+            }
+        }
+
+        async function loadStrategies() {
+            const strategies = await fetchData('/api/strategies');
+            const container = document.getElementById('strategies-table');
+            
+            if (!strategies || strategies.length === 0) {
+                container.innerHTML = '<div class="empty-state">No strategies found. Run some demos to see data!</div>';
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Strategy</th>
+                            <th>Category</th>
+                            <th>Best Return</th>
+                            <th>Sharpe</th>
+                            <th>Tests</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            strategies.forEach(s => {
+                const returnBadge = s.best_return > 0 ? 'positive' : (s.best_return < 0 ? 'negative' : 'neutral');
+                html += `
+                    <tr>
+                        <td><strong>${s.name}</strong></td>
+                        <td><span class="badge neutral">${s.category}</span></td>
+                        <td><span class="badge ${returnBadge}">${s.best_return}%</span></td>
+                        <td>${s.best_sharpe}</td>
+                        <td>${s.backtest_count}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        async function loadAssets() {
+            const assets = await fetchData('/api/asset-comparison');
+            const container = document.getElementById('assets-table');
+            
+            if (!assets || assets.length === 0) {
+                container.innerHTML = '<div class="empty-state">No asset data yet.</div>';
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Asset</th>
+                            <th>Avg Return</th>
+                            <th>Tests</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            assets.forEach(a => {
+                const returnBadge = a.avg_return > 0 ? 'positive' : (a.avg_return < 0 ? 'negative' : 'neutral');
+                html += `
+                    <tr>
+                        <td><strong>${a.symbol}</strong></td>
+                        <td><span class="badge ${returnBadge}">${a.avg_return}%</span></td>
+                        <td>${a.test_count}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        async function loadBacktests() {
+            const backtests = await fetchData('/api/backtests?limit=10');
+            const container = document.getElementById('backtests-table');
+            
+            if (!backtests || backtests.length === 0) {
+                container.innerHTML = '<div class="empty-state">No backtests yet. Run some demos!</div>';
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Strategy</th>
+                            <th>Asset</th>
+                            <th>Return</th>
+                            <th>Sharpe</th>
+                            <th>Max DD</th>
+                            <th>Win Rate</th>
+                            <th>Trades</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            backtests.forEach(bt => {
+                const returnBadge = bt.total_return > 0 ? 'positive' : (bt.total_return < 0 ? 'negative' : 'neutral');
+                html += `
+                    <tr>
+                        <td><strong>${bt.strategy_name}</strong></td>
+                        <td>${bt.symbol}</td>
+                        <td><span class="badge ${returnBadge}">${bt.total_return}%</span></td>
+                        <td>${bt.sharpe_ratio}</td>
+                        <td>${bt.max_drawdown}%</td>
+                        <td>${bt.win_rate}%</td>
+                        <td>${bt.total_trades}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+
+            // Update chart
+            updateChart(backtests);
+        }
+
+        function updateChart(backtests) {
+            const ctx = document.getElementById('performance-chart');
+            
+            // Destroy existing chart if any
+            if (window.myChart) {
+                window.myChart.destroy();
+            }
+
+            const labels = backtests.map(b => `${b.strategy_name} - ${b.symbol}`);
+            const returns = backtests.map(b => b.total_return);
+            const colors = returns.map(r => r > 0 ? 'rgba(72, 187, 120, 0.8)' : 'rgba(245, 101, 101, 0.8)');
+
+            window.myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Return %',
+                        data: returns,
+                        backgroundColor: colors,
+                        borderColor: colors.map(c => c.replace('0.8', '1')),
+                        borderWidth: 2,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14
+                            },
+                            bodyFont: {
+                                size: 13
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function loadData() {
+            await Promise.all([
+                loadStats(),
+                loadStrategies(),
+                loadAssets(),
+                loadBacktests()
+            ]);
+        }
+
+        // Initial load
+        loadData();
+
+        // Auto-refresh every 30 seconds
+        setInterval(loadData, 30000);
+    </script>
+</body>
+</html>
