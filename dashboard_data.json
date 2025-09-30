@@ -1,0 +1,142 @@
+{
+  "last_updated": "2025-09-30 22:49:48",
+  "stats": {
+    "total_strategies": 4,
+    "total_backtests": 1,
+    "total_content": 10,
+    "best_sharpe": -0.11,
+    "avg_sharpe": -0.11
+  },
+  "top_backtests": [
+    {
+      "rank": 1,
+      "strategy": "Moving Average Cross Example",
+      "asset": "AAPL",
+      "sharpe": -0.11,
+      "return": -3.47,
+      "win_rate": 25.0,
+      "max_drawdown": -24.75,
+      "trades": 4
+    }
+  ],
+  "recent_strategies": [
+    {
+      "name": "Auto-discovered: Rsi",
+      "category": "rsi",
+      "status": "discovered",
+      "created": "2025-09-30 21:59"
+    },
+    {
+      "name": "Auto-discovered: Moving Average",
+      "category": "moving_average",
+      "status": "discovered",
+      "created": "2025-09-30 21:59"
+    },
+    {
+      "name": "Auto-discovered: Momentum",
+      "category": "momentum",
+      "status": "discovered",
+      "created": "2025-09-30 21:59"
+    },
+    {
+      "name": "Moving Average Cross Example",
+      "category": "trend_following",
+      "status": "tested",
+      "created": "2025-09-30 20:17"
+    }
+  ],
+  "all_strategies": [
+    {
+      "name": "Auto-discovered: Rsi",
+      "category": "rsi",
+      "created": "2025-09-30 21:59"
+    },
+    {
+      "name": "Auto-discovered: Moving Average",
+      "category": "moving_average",
+      "created": "2025-09-30 21:59"
+    },
+    {
+      "name": "Auto-discovered: Momentum",
+      "category": "momentum",
+      "created": "2025-09-30 21:59"
+    },
+    {
+      "name": "Moving Average Cross Example",
+      "category": "trend_following",
+      "created": "2025-09-30 20:17"
+    }
+  ],
+  "recent_content": [
+    {
+      "title": "RSI\u7684\u53c2\u6570\uff0c\u600e\u4e48\u8bbe\u7f6e\u6bd4\u8f83\u5408\u7406\u5462\uff1f - \u77e5\u4e4e",
+      "url": "https://www.zhihu.com/question/470062332",
+      "scraped": "2025-09-30 20:41",
+      "processed": true,
+      "strategy_created": true
+    },
+    {
+      "title": "Five months RSI SmartCap review - Tacoma World",
+      "url": "https://www.tacomaworld.com/threads/five-months-rsi-smartcap-review.829808/",
+      "scraped": "2025-09-30 20:41",
+      "processed": true,
+      "strategy_created": true
+    },
+    {
+      "title": "\u540c\u5c5e\u8d85\u4e70\u8d85\u5356\u6307\u6807\uff0cKDJ\u3001RSI\u3001CCI\u6307\u6807\u7684\u5185\u5728\u903b\u8f91\u5206\u522b\u662f\u4ec0\u4e48?",
+      "url": "https://www.zhihu.com/question/344170426",
+      "scraped": "2025-09-30 20:41",
+      "processed": true,
+      "strategy_created": true
+    },
+    {
+      "title": "RSI\u6307\u6807\u7684\u8ba1\u7b97\u516c\u5f0f\u662f\u4ec0\u4e48\uff1f - \u77e5\u4e4e",
+      "url": "https://www.zhihu.com/question/51959474",
+      "scraped": "2025-09-30 20:41",
+      "processed": true,
+      "strategy_created": true
+    },
+    {
+      "title": "\u5982\u4f55\u7528RSI\u6307\u6807\u8fdb\u884c\u6280\u672f\u5206\u6790\uff1f - \u77e5\u4e4e",
+      "url": "https://www.zhihu.com/question/38668632",
+      "scraped": "2025-09-30 20:41",
+      "processed": true,
+      "strategy_created": true
+    },
+    {
+      "title": "Momentum \u00bb Empreendimentos | Santa B\u00e1rbara Resort Residence",
+      "url": "https://www.momentum.com.br/empreendimento/santa-barbara-resort-residence",
+      "scraped": "2025-09-30 20:41",
+      "processed": true,
+      "strategy_created": true
+    },
+    {
+      "title": "Momentum \u00bb Incentivo a constru\u00e7\u00e3o",
+      "url": "https://www.momentum.com.br/incentivo-a-construcao",
+      "scraped": "2025-09-30 20:41",
+      "processed": true,
+      "strategy_created": true
+    },
+    {
+      "title": "Momentum \u00bb Campanha meu projeto",
+      "url": "https://www.momentum.com.br/campanha-meu-projeto",
+      "scraped": "2025-09-30 20:41",
+      "processed": true,
+      "strategy_created": false
+    },
+    {
+      "title": "Momentum \u00bb Empreendimentos | Riviera de Santa Cristina XIII",
+      "url": "https://www.momentum.com.br/empreendimento/riviera-de-santa-cristina-xiii",
+      "scraped": "2025-09-30 20:41",
+      "processed": true,
+      "strategy_created": true
+    },
+    {
+      "title": "Momentum \u00bb Empreendimentos | Ninho Verde II Eco Residence",
+      "url": "https://www.momentum.com.br/empreendimento/ninho-verde-ii",
+      "scraped": "2025-09-30 20:41",
+      "processed": true,
+      "strategy_created": true
+    }
+  ]
+}

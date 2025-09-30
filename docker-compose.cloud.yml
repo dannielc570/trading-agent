@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  # Autonomous Research Agent - Runs 24/7
+  agent:
+    build: .
+    container_name: trading-agent-24-7
+    volumes:
+      - ./data:/app/data
+      - ./.env:/app/.env
+    command: python -c "from src.research_agent import ResearchAgent; ResearchAgent().run_forever(3600)"
+    environment:
+      - DATABASE_URL=sqlite:///./data/trading_agent.db
+    restart: always
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sqlite3; sqlite3.connect('/app/data/trading_agent.db').execute('SELECT 1')"]
+      interval: 300s
+      timeout: 10s
+      retries: 3
+
+  # Dashboard Data Updater - Updates every 5 seconds
+  updater:
+    build: .
+    container_name: dashboard-updater
+    volumes:
+      - ./data:/app/data
+      - ./.env:/app/.env
+    command: python update_dashboard_data.py
+    environment:
+      - DATABASE_URL=sqlite:///./data/trading_agent.db
+    restart: always
+    depends_on:
+      - agent
+
+  # Static File Server for Dashboard
+  webserver:
+    image: nginx:alpine
+    container_name: dashboard-server
+    ports:
+      - "8080:80"
+    volumes:
+      - ./live_dashboard.html:/usr/share/nginx/html/index.html
+      - ./data/dashboard_data.json:/usr/share/nginx/html/dashboard_data.json
+    restart: always
+    depends_on:
+      - updater
+
+volumes:
+  data:

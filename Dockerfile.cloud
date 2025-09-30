@@ -1,0 +1,54 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    nginx \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# Create data directory
+RUN mkdir -p /app/data
+
+# Configure nginx for dashboard
+RUN echo 'server { \
+    listen 8080; \
+    root /app; \
+    location / { \
+        try_files /live_dashboard.html =404; \
+    } \
+    location /dashboard_data.json { \
+        alias /app/data/dashboard_data.json; \
+        add_header Cache-Control "no-cache, no-store, must-revalidate"; \
+    } \
+}' > /etc/nginx/sites-available/default
+
+# Expose port
+EXPOSE 8080
+
+# Create startup script
+RUN echo '#!/bin/bash\n\
+# Start autonomous agent in background\n\
+python -c "from src.research_agent import ResearchAgent; ResearchAgent().run_forever(3600)" &\n\
+\n\
+# Start dashboard updater in background\n\
+python update_dashboard_data.py &\n\
+\n\
+# Start nginx for dashboard\n\
+nginx -g "daemon off;"\n\
+' > /app/start.sh && chmod +x /app/start.sh
+
+# Start all services
+CMD ["/app/start.sh"]

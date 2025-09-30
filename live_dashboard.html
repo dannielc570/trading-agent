@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Live Trading Agent Dashboard</title>
+<meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f7fa; padding: 20px; }
+.container { max-width: 1400px; margin: 0 auto; }
+.header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.header h1 { font-size: 32px; margin-bottom: 10px; }
+.header .update-time { opacity: 0.9; font-size: 14px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
+.stat-card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s; }
+.stat-card:hover { transform: translateY(-5px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+.stat-label { font-size: 14px; color: #718096; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-value { font-size: 36px; font-weight: bold; color: #2d3748; }
+.stat-value.positive { color: #48bb78; }
+.stat-value.negative { color: #f56565; }
+.section { background: white; padding: 25px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.section h2 { font-size: 24px; margin-bottom: 20px; color: #2d3748; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
+table { width: 100%; border-collapse: collapse; }
+th { background: #4a5568; color: white; padding: 12px; text-align: left; font-weight: 600; }
+td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
+tr:hover { background: #f7fafc; }
+.badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.badge-success { background: #c6f6d5; color: #22543d; }
+.badge-warning { background: #feebc8; color: #7c2d12; }
+.badge-info { background: #bee3f8; color: #2c5282; }
+.loading { text-align: center; padding: 40px; color: #718096; }
+.pulse { animation: pulse 2s infinite; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.auto-refresh { position: fixed; bottom: 20px; right: 20px; background: #48bb78; color: white; padding: 12px 20px; border-radius: 25px; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: pulse 2s infinite; }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>🤖 Live Trading Agent Dashboard</h1>
+    <div class="update-time">Last Updated: <span id="last-updated">Loading...</span></div>
+  </div>
+
+  <div class="stats" id="stats-container">
+    <div class="stat-card">
+      <div class="stat-label">Total Strategies</div>
+      <div class="stat-value" id="total-strategies">-</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Backtests</div>
+      <div class="stat-value" id="total-backtests">-</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Scraped Articles</div>
+      <div class="stat-value" id="total-content">-</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Best Sharpe Ratio</div>
+      <div class="stat-value" id="best-sharpe">-</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Average Sharpe</div>
+      <div class="stat-value" id="avg-sharpe">-</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🏆 Top Performing Strategies</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Strategy</th>
+          <th>Asset</th>
+          <th>Sharpe Ratio</th>
+          <th>Total Return</th>
+          <th>Win Rate</th>
+          <th>Max Drawdown</th>
+          <th>Trades</th>
+        </tr>
+      </thead>
+      <tbody id="top-backtests">
+        <tr><td colspan="8" class="loading">Loading data...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="grid-2">
+    <div class="section">
+      <h2>💡 Recent Strategies</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Strategy Name</th>
+            <th>Category</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody id="recent-strategies">
+          <tr><td colspan="3" class="loading">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>🌐 Recent Scraped Content</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Scraped</th>
+          </tr>
+        </thead>
+        <tbody id="recent-content">
+          <tr><td colspan="3" class="loading">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📊 All Strategies</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Strategy Name</th>
+          <th>Category</th>
+          <th>Created</th>
+        </tr>
+      </thead>
+      <tbody id="all-strategies">
+        <tr><td colspan="4" class="loading">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="auto-refresh">🔄 Auto-Refreshing</div>
+
+<script>
+let updateCount = 0;
+
+async function loadDashboardData() {
+  try {
+    const response = await fetch('dashboard_data.json?t=' + Date.now());
+    const data = await response.json();
+    
+    updateCount++;
+    
+    // Update timestamp
+    document.getElementById('last-updated').textContent = data.last_updated + ' (Update #' + updateCount + ')';
+    
+    // Update stats
+    document.getElementById('total-strategies').textContent = data.stats.total_strategies;
+    document.getElementById('total-backtests').textContent = data.stats.total_backtests;
+    document.getElementById('total-content').textContent = data.stats.total_content;
+    document.getElementById('best-sharpe').textContent = data.stats.best_sharpe.toFixed(2);
+    document.getElementById('avg-sharpe').textContent = data.stats.avg_sharpe.toFixed(2);
+    
+    // Update top backtests
+    const topBacktestsHtml = data.top_backtests.map(b => `
+      <tr>
+        <td><strong>${b.rank}</strong></td>
+        <td>${b.strategy}</td>
+        <td>${b.asset}</td>
+        <td><strong>${b.sharpe.toFixed(2)}</strong></td>
+        <td class="${b.return >= 0 ? 'positive' : 'negative'}">${b.return.toFixed(2)}%</td>
+        <td>${b.win_rate.toFixed(1)}%</td>
+        <td class="negative">${b.max_drawdown.toFixed(2)}%</td>
+        <td>${b.trades}</td>
+      </tr>
+    `).join('');
+    document.getElementById('top-backtests').innerHTML = topBacktestsHtml || '<tr><td colspan="8">No backtests yet</td></tr>';
+    
+    // Update recent strategies
+    const recentStrategiesHtml = data.recent_strategies.map(s => `
+      <tr>
+        <td>${s.name}</td>
+        <td><span class="badge badge-info">${s.category}</span></td>
+        <td>${s.created}</td>
+      </tr>
+    `).join('');
+    document.getElementById('recent-strategies').innerHTML = recentStrategiesHtml || '<tr><td colspan="3">No strategies yet</td></tr>';
+    
+    // Update all strategies
+    const allStrategiesHtml = data.all_strategies.map((s, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td>${s.name}</td>
+        <td><span class="badge badge-info">${s.category}</span></td>
+        <td>${s.created}</td>
+      </tr>
+    `).join('');
+    document.getElementById('all-strategies').innerHTML = allStrategiesHtml || '<tr><td colspan="4">No strategies yet</td></tr>';
+    
+    // Update recent content
+    const recentContentHtml = data.recent_content.map(c => `
+      <tr>
+        <td><a href="${c.url}" target="_blank">${c.title.substring(0, 50)}...</a></td>
+        <td>
+          ${c.processed ? '<span class="badge badge-success">Processed</span>' : '<span class="badge badge-warning">Pending</span>'}
+          ${c.strategy_created ? '<span class="badge badge-success">Strategy Created</span>' : ''}
+        </td>
+        <td>${c.scraped}</td>
+      </tr>
+    `).join('');
+    document.getElementById('recent-content').innerHTML = recentContentHtml || '<tr><td colspan="3">No content yet</td></tr>';
+    
+  } catch (error) {
+    console.error('Error loading dashboard data:', error);
+  }
+}
+
+// Load data immediately
+loadDashboardData();
+
+// Auto-refresh every 5 seconds
+setInterval(loadDashboardData, 5000);
+</script>
+
+</body>
+</html>

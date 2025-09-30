@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: trading-agent-24-7
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:///./data/trading_agent.db
+    autoDeploy: true
