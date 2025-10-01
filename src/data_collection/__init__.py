@@ -6,6 +6,7 @@ from .market_data import MarketDataCollector
 from .minute_data import MinuteDataCollector
 from .tradingview_scraper import TradingViewScraper as TVScraper
 from .scribd_scraper import ScribdScraper
+from .alpaca_data import AlpacaDataCollector, SETUP_INSTRUCTIONS
 
 __all__ = [
     "WebSearcher",
@@ -16,4 +17,6 @@ __all__ = [
     "MinuteDataCollector",
     "TVScraper",
     "ScribdScraper",
+    "AlpacaDataCollector",
+    "SETUP_INSTRUCTIONS",
 ]

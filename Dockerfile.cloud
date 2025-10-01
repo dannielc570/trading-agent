@@ -38,22 +38,44 @@ RUN echo 'server { \
 # Expose port
 EXPOSE 8080
 
-# Create startup script
+# Create startup script with proper logging
 RUN echo '#!/bin/bash\n\
-# Initialize database\n\
-echo "Initializing database..."\n\
-python init_database.py\n\
+set -e\n\
 \n\
-# Start autonomous agent in background\n\
+# Initialize database\n\
+echo "========================================"\n\
+echo "Initializing database..."\n\
+echo "========================================"\n\
+python init_database.py || { echo "Database init failed!"; exit 1; }\n\
+\n\
+# Start autonomous agent in background WITH LOGGING\n\
+echo "========================================"\n\
 echo "Starting autonomous research agent..."\n\
-python start_agent.py &\n\
+echo "========================================"\n\
+python -u start_agent.py 2>&1 | tee -a /tmp/agent.log &\n\
+AGENT_PID=$!\n\
+echo "Agent PID: $AGENT_PID"\n\
+sleep 2\n\
+\n\
+# Check if agent is still running\n\
+if kill -0 $AGENT_PID 2>/dev/null; then\n\
+    echo "✅ Agent started successfully (PID: $AGENT_PID)"\n\
+else\n\
+    echo "❌ Agent failed to start! Check logs:"\n\
+    cat /tmp/agent.log\n\
+    exit 1\n\
+fi\n\
 \n\
 # Start dashboard updater in background\n\
+echo "========================================"\n\
 echo "Starting dashboard updater..."\n\
-python update_dashboard_data.py &\n\
+echo "========================================"\n\
+python -u update_dashboard_data.py 2>&1 &\n\
 \n\
 # Start nginx for dashboard\n\
+echo "========================================"\n\
 echo "Starting web dashboard..."\n\
+echo "========================================"\n\
 nginx -g "daemon off;"\n\
 ' > /app/start.sh && chmod +x /app/start.sh
 

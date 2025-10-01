@@ -18,11 +18,20 @@ class MinuteDataCollector:
     
     def __init__(self):
         self.sources_priority = [
-            'yfinance',
-            'polygon',
+            'alpaca',      # BEST: Free, years of data, no rate limits!
+            'yfinance',    # Good: 60 days max
+            'polygon',     # Paid but excellent
             'alpha_vantage',
             'twelve_data'
         ]
+        
+        # Try to import Alpaca
+        try:
+            from .alpaca_data import AlpacaDataCollector
+            self.alpaca = AlpacaDataCollector()
+        except:
+            self.alpaca = None
+            logger.warning("⚠️  Alpaca not available. Sign up FREE at https://alpaca.markets/ for YEARS of 1-min data!")
     
     async def fetch_1min_data(
         self,

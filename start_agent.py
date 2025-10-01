@@ -6,34 +6,56 @@ Runs the agent 24/7 on cloud platforms
 
 import asyncio
 import sys
+import traceback
 from pathlib import Path
+
+# Force unbuffered output
+sys.stdout.reconfigure(line_buffering=True)
+sys.stderr.reconfigure(line_buffering=True)
 
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from src.research_agent.main_agent import ResearchAgent
-from loguru import logger
+print("=" * 80, flush=True)
+print("🤖 STARTING AUTONOMOUS RESEARCH AGENT", flush=True)
+print("=" * 80, flush=True)
+
+try:
+    from src.research_agent.main_agent import ResearchAgent
+    from loguru import logger
+    print("✅ Imports successful", flush=True)
+except Exception as e:
+    print(f"❌ IMPORT ERROR: {e}", flush=True)
+    traceback.print_exc()
+    sys.exit(1)
 
 async def main():
     """Start the autonomous research agent"""
-    logger.info("=" * 80)
-    logger.info("🤖 STARTING AUTONOMOUS RESEARCH AGENT")
-    logger.info("=" * 80)
-    
     try:
-        # Initialize agent
+        print("Initializing ResearchAgent...", flush=True)
         agent = ResearchAgent()
+        print("✅ Agent initialized successfully", flush=True)
         logger.info("✅ Agent initialized successfully")
         
-        # Run forever with 1-hour cycles
+        print("🚀 Starting continuous operation (1-hour cycles)", flush=True)
         logger.info("🚀 Starting continuous operation (1-hour cycles)")
+        
         await agent.run_forever(cycle_interval=3600)
         
     except KeyboardInterrupt:
+        print("🛑 Agent stopped by user", flush=True)
         logger.info("🛑 Agent stopped by user")
     except Exception as e:
+        print(f"❌ Agent crashed: {e}", flush=True)
+        traceback.print_exc()
         logger.error(f"❌ Agent crashed: {e}")
-        raise
+        sys.exit(1)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        print("Starting asyncio event loop...", flush=True)
+        asyncio.run(main())
+    except Exception as e:
+        print(f"❌ FATAL ERROR: {e}", flush=True)
+        traceback.print_exc()
+        sys.exit(1)
