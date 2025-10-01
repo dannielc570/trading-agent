@@ -77,7 +77,7 @@ class ImprovementEngine:
             logger.error(f"Optimization failed: {e}")
             return {'success': False, 'error': str(e)}
     
-    def test_on_new_asset(self, strategy_id: int, asset: str) -> Dict[str, Any]:
+    async def test_on_new_asset(self, strategy_id: int, asset: str) -> Dict[str, Any]:
         """Test a strategy on a new asset"""
         logger.info(f"📊 Testing strategy {strategy_id} on {asset}...")
         
@@ -99,7 +99,7 @@ class ImprovementEngine:
                     return {'success': True, 'existing': True, 'backtest_id': existing.id}
                 
                 # Fetch data
-                data = self.data_collector.fetch_ohlcv(
+                data = await self.data_collector.fetch_ohlcv(
                     symbol=asset,
                     timeframe='1d'
                 )
@@ -155,7 +155,7 @@ class ImprovementEngine:
             logger.error(f"Testing on {asset} failed: {e}")
             return {'success': False, 'error': str(e)}
     
-    def run_improvement_cycle(self) -> Dict[str, Any]:
+    async def run_improvement_cycle(self) -> Dict[str, Any]:
         """Run a complete improvement cycle"""
         logger.info("🚀 Starting improvement cycle...")
         
@@ -173,7 +173,7 @@ class ImprovementEngine:
             for action in actions[:10]:  # Limit to 10 actions per cycle
                 try:
                     if action['action'] == 'optimize':
-                        result = self.optimize_strategy(
+                        result = await self.optimize_strategy(
                             strategy_id=action['strategy_id'],
                             asset='AAPL'  # Default asset for optimization
                         )
@@ -183,7 +183,7 @@ class ImprovementEngine:
                                 results['improvements_found'] += 1
                     
                     elif action['action'] == 'backtest':
-                        result = self.test_on_new_asset(
+                        result = await self.test_on_new_asset(
                             strategy_id=action['strategy_id'],
                             asset=action['asset']
                         )

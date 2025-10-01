@@ -133,7 +133,7 @@ class ResearchAgent:
         logger.info(f"📋 Planned {len(actions)} actions")
         return actions
     
-    def execute_action(self, action: Dict[str, Any]) -> Dict[str, Any]:
+    async def execute_action(self, action: Dict[str, Any]) -> Dict[str, Any]:
         """Execute a single action"""
         action_type = action['type']
         logger.info(f"⚡ Executing action: {action_type} ({action['priority']} priority)")
@@ -148,7 +148,7 @@ class ResearchAgent:
                 self.state['total_strategies_added'] += discovery_result.get('strategies_created', 0)
             
             elif action_type == 'optimization' or action_type == 'improvement':
-                improvement_result = self.improver.run_improvement_cycle()
+                improvement_result = await self.improver.run_improvement_cycle()
                 result['success'] = True
                 result['details'] = improvement_result
                 self.state['total_optimizations'] += improvement_result.get('optimizations_run', 0)
@@ -160,7 +160,7 @@ class ResearchAgent:
                 tests_run = 0
                 
                 for combo in untested[:5]:  # Test up to 5 combinations
-                    test_result = self.improver.test_on_new_asset(
+                    test_result = await self.improver.test_on_new_asset(
                         strategy_id=combo['strategy_id'],
                         asset=combo['asset']
                     )
@@ -179,7 +179,7 @@ class ResearchAgent:
         
         return result
     
-    def run_cycle(self) -> Dict[str, Any]:
+    async def run_cycle(self) -> Dict[str, Any]:
         """Run one complete research cycle"""
         cycle_start = datetime.utcnow()
         self.state['cycles_run'] += 1
@@ -207,7 +207,7 @@ class ResearchAgent:
             
             # Step 3: Execute actions
             for action in actions[:self.config['max_actions_per_cycle']]:
-                result = self.execute_action(action)
+                result = await self.execute_action(action)
                 cycle_results['actions_executed'].append(result)
                 
                 if not result['success']:
@@ -296,21 +296,21 @@ class ResearchAgent:
             'next_actions': self.decide_next_actions(evaluation)
         }
     
-    def run_forever(self, interval_seconds: int = 3600):
+    async def run_forever(self, interval_seconds: int = 3600):
         """Run the agent continuously (for production)"""
-        import time
+        import asyncio
         
         logger.info(f"🚀 Starting continuous operation (interval: {interval_seconds}s)")
         
         while True:
             try:
-                self.run_cycle()
+                await self.run_cycle()
                 logger.info(f"😴 Sleeping for {interval_seconds}s...")
-                time.sleep(interval_seconds)
+                await asyncio.sleep(interval_seconds)
             except KeyboardInterrupt:
                 logger.info("🛑 Agent stopped by user")
                 break
             except Exception as e:
                 logger.error(f"❌ Cycle error: {e}")
                 logger.info(f"⏳ Waiting {interval_seconds}s before retry...")
-                time.sleep(interval_seconds)
+                await asyncio.sleep(interval_seconds)
