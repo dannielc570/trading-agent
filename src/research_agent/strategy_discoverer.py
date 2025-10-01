@@ -42,10 +42,13 @@ class StrategyDiscoverer:
             'Fibonacci', 'Parabolic SAR', 'Williams %R'
         ]
     
-    def search_for_strategies(self, max_results: int = 20) -> List[Dict[str, Any]]:
-        """Search the web for trading strategies"""
-        logger.info("🔍 Searching for new trading strategies...")
+    async def search_for_strategies(self, max_results: int = 20) -> List[Dict[str, Any]]:
+        """Search the web, TradingView, and Scribd for trading strategies"""
+        logger.info("🔍 Searching for new trading strategies from multiple sources...")
         
+        all_results = []
+        
+        # 1. Search web
         search_queries = [
             "best trading strategies 2024",
             "profitable algorithmic trading strategies",
@@ -55,15 +58,34 @@ class StrategyDiscoverer:
             "machine learning trading strategies",
         ]
         
-        all_results = []
-        for query in search_queries:
+        for query in search_queries[:3]:  # Reduced to 3 for faster execution
             try:
-                results = self.searcher.search_strategies(query, max_results=5)
+                results = self.searcher.search_strategies(query, max_results=3)
                 all_results.extend(results)
                 logger.info(f"Found {len(results)} results for '{query}'")
             except Exception as e:
                 logger.error(f"Search failed for '{query}': {e}")
         
+        # 2. Search TradingView
+        try:
+            logger.info("📈 Scraping TradingView strategies...")
+            tv_strategies = await self.tv_scraper.scrape_top_strategies(limit=5)
+            all_results.extend(tv_strategies)
+            logger.success(f"✅ Found {len(tv_strategies)} strategies from TradingView")
+        except Exception as e:
+            logger.error(f"TradingView scraping failed: {e}")
+        
+        # 3. Search Scribd for trading books/strategies
+        try:
+            logger.info("📚 Scraping Scribd for trading documents...")
+            scribd_docs = await self.scribd_scraper.search_trading_documents(limit=5)
+            scribd_strategies = await self.scribd_scraper.extract_strategy_concepts(scribd_docs)
+            all_results.extend(scribd_strategies)
+            logger.success(f"✅ Found {len(scribd_strategies)} strategy concepts from Scribd")
+        except Exception as e:
+            logger.error(f"Scribd scraping failed: {e}")
+        
+        logger.success(f"🎯 Total strategies found: {len(all_results)}")
         return all_results[:max_results]
     
     def analyze_content_for_strategies(self, content: str) -> Dict[str, Any]:
