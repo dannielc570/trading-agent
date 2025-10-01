@@ -45,12 +45,15 @@ echo "Initializing database..."\n\
 python init_database.py\n\
 \n\
 # Start autonomous agent in background\n\
-python -c "from src.research_agent import ResearchAgent; ResearchAgent().run_forever(3600)" &\n\
+echo "Starting autonomous research agent..."\n\
+python start_agent.py &\n\
 \n\
 # Start dashboard updater in background\n\
+echo "Starting dashboard updater..."\n\
 python update_dashboard_data.py &\n\
 \n\
 # Start nginx for dashboard\n\
+echo "Starting web dashboard..."\n\
 nginx -g "daemon off;"\n\
 ' > /app/start.sh && chmod +x /app/start.sh
 
