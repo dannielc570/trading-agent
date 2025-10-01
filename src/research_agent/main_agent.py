@@ -155,17 +155,16 @@ class ResearchAgent:
                 self.state['total_tests_run'] += improvement_result.get('new_tests', 0)
             
             elif action_type == 'testing':
-                # Get untested combinations and test them
+                # Get untested combinations and test them on ALL TIMEFRAMES
                 untested = self.knowledge.get_untested_combinations()
                 tests_run = 0
                 
-                for combo in untested[:5]:  # Test up to 5 combinations
-                    test_result = await self.improver.test_on_new_asset(
+                for combo in untested[:3]:  # Test up to 3 assets (each across 8 timeframes = 24 tests)
+                    multi_tf_result = await self.improver.test_on_multiple_timeframes(
                         strategy_id=combo['strategy_id'],
                         asset=combo['asset']
                     )
-                    if test_result['success']:
-                        tests_run += 1
+                    tests_run += multi_tf_result['tests_completed']
                 
                 result['success'] = True
                 result['details'] = {'tests_run': tests_run}

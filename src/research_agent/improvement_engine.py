@@ -76,9 +76,9 @@ class ImprovementEngine:
             logger.error(f"Optimization failed: {e}")
             return {'success': False, 'error': str(e)}
     
-    async def test_on_new_asset(self, strategy_id: int, asset: str) -> Dict[str, Any]:
-        """Test a strategy on a new asset"""
-        logger.info(f"📊 Testing strategy {strategy_id} on {asset}...")
+    async def test_on_new_asset(self, strategy_id: int, asset: str, timeframe: str = '1d') -> Dict[str, Any]:
+        """Test a strategy on a new asset and timeframe"""
+        logger.info(f"📊 Testing strategy {strategy_id} on {asset} ({timeframe})...")
         
         try:
             with get_db_context() as db:
@@ -87,20 +87,21 @@ class ImprovementEngine:
                 if not strategy:
                     return {'success': False, 'error': 'Strategy not found'}
                 
-                # Check if already tested
+                # Check if already tested on this timeframe
                 existing = db.query(Backtest).filter(
                     Backtest.strategy_id == strategy_id,
-                    Backtest.symbol == asset
+                    Backtest.symbol == asset,
+                    Backtest.timeframe == timeframe
                 ).first()
                 
                 if existing:
-                    logger.info(f"Strategy already tested on {asset}")
+                    logger.info(f"Strategy already tested on {asset} {timeframe}")
                     return {'success': True, 'existing': True, 'backtest_id': existing.id}
                 
-                # Fetch data
+                # Fetch data for the specific timeframe
                 data = await self.data_collector.fetch_ohlcv(
                     symbol=asset,
-                    timeframe='1d'
+                    timeframe=timeframe
                 )
                 
                 if data is None or len(data) < 100:
