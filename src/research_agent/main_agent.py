@@ -21,9 +21,17 @@ class ResearchAgent:
     """The main autonomous research agent"""
     
     def __init__(self):
+        print("[ResearchAgent] Initializing knowledge base...", flush=True)
         self.knowledge = KnowledgeBase()
+        print("[ResearchAgent] ✅ Knowledge base OK", flush=True)
+        
+        print("[ResearchAgent] Initializing discoverer...", flush=True)
         self.discoverer = StrategyDiscoverer()
+        print("[ResearchAgent] ✅ Discoverer OK", flush=True)
+        
+        print("[ResearchAgent] Initializing improver...", flush=True)
         self.improver = ImprovementEngine()
+        print("[ResearchAgent] ✅ Improver OK", flush=True)
         
         # Agent goals and config
         self.goals = {

@@ -15,7 +15,20 @@ class WebSearcher:
     
     def __init__(self):
         """Initialize web searcher"""
-        self.ddg = DDGS() if DDGS else None
+        # Lazy initialization to avoid blocking on init
+        self._ddg = None
+        self._ddg_available = DDGS is not None
+    
+    @property
+    def ddg(self):
+        """Lazy load DDGS only when needed"""
+        if self._ddg is None and self._ddg_available:
+            try:
+                self._ddg = DDGS()
+            except Exception as e:
+                logger.warning(f"Failed to initialize DDGS: {e}")
+                self._ddg_available = False
+        return self._ddg
         
     async def search_strategies(
         self,

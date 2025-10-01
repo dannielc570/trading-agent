@@ -22,6 +22,8 @@ class StrategyDiscoverer:
     def __init__(self):
         self.searcher = WebSearcher()
         self.scraper = GenericWebScraper()
+        self.tv_scraper = TVScraper()
+        self.scribd_scraper = ScribdScraper()
         
         # Known strategy patterns to detect
         self.strategy_patterns = {
