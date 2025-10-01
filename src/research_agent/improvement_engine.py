@@ -21,6 +21,9 @@ from .knowledge_base import KnowledgeBase
 class ImprovementEngine:
     """Continuously improves platform performance"""
     
+    # All timeframes to test strategies on
+    TIMEFRAMES = ['1m', '5m', '15m', '30m', '1h', '4h', '1d', '1w']
+    
     def __init__(self):
         self.knowledge = KnowledgeBase()
         self.data_collector = MarketDataCollector()
