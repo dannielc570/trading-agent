@@ -12,7 +12,7 @@ from loguru import logger
 import re
 
 from ..database import get_db_context, Strategy, ScrapedContent
-from ..data_collection import WebSearcher, GenericWebScraper
+from ..data_collection import WebSearcher, GenericWebScraper, TVScraper, ScribdScraper
 # Note: Strategy classes are not imported here as discoverer only creates database entries
 
 
