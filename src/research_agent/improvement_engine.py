@@ -27,7 +27,7 @@ class ImprovementEngine:
         self.backtest_engine = BacktestEngine()
         self.optimizer = StrategyOptimizer()
         
-    def optimize_strategy(self, strategy_id: int, asset: str = 'AAPL') -> Dict[str, Any]:
+    async def optimize_strategy(self, strategy_id: int, asset: str = 'AAPL') -> Dict[str, Any]:
         """Optimize parameters for a specific strategy"""
         logger.info(f"🎯 Optimizing strategy {strategy_id} on {asset}...")
         
@@ -39,10 +39,9 @@ class ImprovementEngine:
                     return {'success': False, 'error': 'Strategy not found'}
                 
                 # Fetch market data
-                data = self.data_collector.fetch_ohlcv(
+                data = await self.data_collector.fetch_ohlcv(
                     symbol=asset,
-                    timeframe='1d',
-                    limit=500
+                    timeframe='1d'
                 )
                 
                 if data is None or len(data) < 100:
