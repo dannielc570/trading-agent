@@ -5,7 +5,8 @@ from pathlib import Path
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from src.database import Base, engine, get_db_context
+from src.database.database import Base, engine
+from src.database import get_db_context
 from src.database.models import Strategy, Backtest, OptimizationRun, ScrapedContent, MarketData
 from loguru import logger
 
