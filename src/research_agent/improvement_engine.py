@@ -101,8 +101,7 @@ class ImprovementEngine:
                 # Fetch data
                 data = self.data_collector.fetch_ohlcv(
                     symbol=asset,
-                    timeframe='1d',
-                    limit=500
+                    timeframe='1d'
                 )
                 
                 if data is None or len(data) < 100:
