@@ -1,7 +1,7 @@
 {
-  "last_updated": "2025-10-03 16:32:41",
+  "last_updated": "2025-10-03 18:10:49",
   "stats": {
-    "total_strategies": 4,
+    "total_strategies": 12,
     "total_backtests": 1,
     "total_content": 10,
     "best_sharpe": -0.11,
@@ -21,6 +21,54 @@
   ],
   "recent_strategies": [
     {
+      "name": "RSI_strategy",
+      "category": "RSI",
+      "status": "discovered",
+      "created": "2025-10-03 17:59"
+    },
+    {
+      "name": "Moving_average_crossover",
+      "category": "Moving Average",
+      "status": "discovered",
+      "created": "2025-10-03 17:59"
+    },
+    {
+      "name": "MACD_strategy",
+      "category": "Moving Average",
+      "status": "discovered",
+      "created": "2025-10-03 17:59"
+    },
+    {
+      "name": "Bollinger_bands_strategy",
+      "category": "Bollinger Bands",
+      "status": "discovered",
+      "created": "2025-10-03 17:59"
+    },
+    {
+      "name": "EMA_crossover",
+      "category": "Moving Average",
+      "status": "discovered",
+      "created": "2025-10-03 17:59"
+    },
+    {
+      "name": "price_action_from_scribd",
+      "category": "Algorithmic Trading",
+      "status": "discovered",
+      "created": "2025-10-03 17:59"
+    },
+    {
+      "name": "momentum_from_scribd",
+      "category": "Momentum Strategies",
+      "status": "discovered",
+      "created": "2025-10-03 17:59"
+    },
+    {
+      "name": "mean_reversion_from_scribd",
+      "category": "Mean Reversion",
+      "status": "discovered",
+      "created": "2025-10-03 17:59"
+    },
+    {
       "name": "Auto-discovered: Rsi",
       "category": "rsi",
       "status": "discovered",
@@ -31,21 +79,49 @@
       "category": "moving_average",
       "status": "discovered",
       "created": "2025-09-30 21:59"
-    },
-    {
-      "name": "Auto-discovered: Momentum",
-      "category": "momentum",
-      "status": "discovered",
-      "created": "2025-09-30 21:59"
-    },
-    {
-      "name": "Moving Average Cross Example",
-      "category": "trend_following",
-      "status": "tested",
-      "created": "2025-09-30 20:17"
     }
   ],
   "all_strategies": [
+    {
+      "name": "RSI_strategy",
+      "category": "RSI",
+      "created": "2025-10-03 17:59"
+    },
+    {
+      "name": "Moving_average_crossover",
+      "category": "Moving Average",
+      "created": "2025-10-03 17:59"
+    },
+    {
+      "name": "MACD_strategy",
+      "category": "Moving Average",
+      "created": "2025-10-03 17:59"
+    },
+    {
+      "name": "Bollinger_bands_strategy",
+      "category": "Bollinger Bands",
+      "created": "2025-10-03 17:59"
+    },
+    {
+      "name": "EMA_crossover",
+      "category": "Moving Average",
+      "created": "2025-10-03 17:59"
+    },
+    {
+      "name": "price_action_from_scribd",
+      "category": "Algorithmic Trading",
+      "created": "2025-10-03 17:59"
+    },
+    {
+      "name": "momentum_from_scribd",
+      "category": "Momentum Strategies",
+      "created": "2025-10-03 17:59"
+    },
+    {
+      "name": "mean_reversion_from_scribd",
+      "category": "Mean Reversion",
+      "created": "2025-10-03 17:59"
+    },
     {
       "name": "Auto-discovered: Rsi",
       "category": "rsi",

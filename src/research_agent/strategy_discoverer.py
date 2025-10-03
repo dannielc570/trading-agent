@@ -26,6 +26,8 @@ class StrategyDiscoverer:
         # Lazy load these to avoid import hangs
         self._tv_scraper = None
         self._scribd_scraper = None
+        self._reddit_scraper = None
+        self._google_scraper = None
     
     @property
     def tv_scraper(self):
@@ -40,6 +42,20 @@ class StrategyDiscoverer:
             from ..data_collection import ScribdScraper
             self._scribd_scraper = ScribdScraper()
         return self._scribd_scraper
+    
+    @property
+    def reddit_scraper(self):
+        if self._reddit_scraper is None:
+            from ..data_collection.reddit_scraper import RedditScraper
+            self._reddit_scraper = RedditScraper()
+        return self._reddit_scraper
+    
+    @property
+    def google_scraper(self):
+        if self._google_scraper is None:
+            from ..data_collection.google_search import GoogleSearchScraper
+            self._google_scraper = GoogleSearchScraper()
+        return self._google_scraper
         
         # Known strategy patterns to detect
         self.strategy_patterns = {
@@ -121,6 +137,24 @@ class StrategyDiscoverer:
             logger.success(f"✅ Found {len(scribd_strategies)} strategy concepts from Scribd")
         except Exception as e:
             logger.error(f"Scribd scraping failed: {e}")
+        
+        # 4. Search Reddit (r/algotrading, r/quantfinance, etc.)
+        try:
+            logger.info("💬 Scraping Reddit for trading strategies...")
+            reddit_strategies = await self.reddit_scraper.scrape_trading_strategies(limit=10)
+            all_results.extend(reddit_strategies)
+            logger.success(f"✅ Found {len(reddit_strategies)} strategies from Reddit")
+        except Exception as e:
+            logger.error(f"Reddit scraping failed: {e}")
+        
+        # 5. Google Search (comprehensive strategy search)
+        try:
+            logger.info("🔍 Searching Google for trading strategies...")
+            google_strategies = await self.google_scraper.search_trading_strategies(max_results=15)
+            all_results.extend(google_strategies)
+            logger.success(f"✅ Found {len(google_strategies)} strategies from Google")
+        except Exception as e:
+            logger.error(f"Google search failed: {e}")
         
         logger.success(f"🎯 Total strategies found: {len(all_results)}")
         return all_results[:max_results]
