@@ -22,26 +22,50 @@ COPY . .
 # Create data directory
 RUN mkdir -p /app/data
 
-# Configure nginx to serve index.html ONLY (delete old dashboards to prevent confusion)
+# Configure nginx to serve index.html ONLY
 RUN rm -f /app/live_dashboard.html /app/dashboard.html && \
-    echo 'server { listen 8080; root /app; location / { try_files /index.html /index.html; } location /dashboard_data.json { alias /app/data/dashboard_data.json; add_header Cache-Control "no-cache"; } }' > /etc/nginx/sites-available/default
+    echo 'server { listen 8080; root /app; location / { try_files /index.html /index.html; } location /dashboard_data.json { alias /app/dashboard_data.json; add_header Cache-Control "no-cache"; } }' > /etc/nginx/sites-available/default
 
 EXPOSE 8080
 
-# Startup script
+# Startup script with 24/7 auto-restart loops
 RUN echo '#!/bin/bash' > /app/start.sh && \
     echo 'set -e' >> /app/start.sh && \
-    echo 'echo "Initializing database..."' >> /app/start.sh && \
+    echo 'echo "🚀 STARTING 24/7 TRADING RESEARCH AGENT"' >> /app/start.sh && \
+    echo 'echo "========================================"' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo '# Initialize database' >> /app/start.sh && \
+    echo 'echo "📊 Initializing database..."' >> /app/start.sh && \
     echo 'python init_database.py' >> /app/start.sh && \
-    echo 'echo "Bootstrapping data..."' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo '# Bootstrap initial data' >> /app/start.sh && \
+    echo 'echo "📦 Bootstrapping data..."' >> /app/start.sh && \
     echo 'python bootstrap_data.py' >> /app/start.sh && \
-    echo 'echo "Starting dashboard updater..."' >> /app/start.sh && \
-    echo 'python -u update_dashboard_data.py &' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo '# Start dashboard updater with auto-restart' >> /app/start.sh && \
+    echo 'echo "📈 Starting dashboard updater (auto-restart enabled)..."' >> /app/start.sh && \
+    echo 'while true; do' >> /app/start.sh && \
+    echo '  python -u update_dashboard_data.py' >> /app/start.sh && \
+    echo '  echo "⚠️  Dashboard updater stopped, restarting in 5s..."' >> /app/start.sh && \
+    echo '  sleep 5' >> /app/start.sh && \
+    echo 'done &' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
     echo 'sleep 3' >> /app/start.sh && \
-    echo 'echo "Starting agent..."' >> /app/start.sh && \
-    echo 'python -u start_agent.py &' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo '# Start agent with auto-restart' >> /app/start.sh && \
+    echo 'echo "🤖 Starting research agent (auto-restart enabled)..."' >> /app/start.sh && \
+    echo 'while true; do' >> /app/start.sh && \
+    echo '  python -u start_agent.py' >> /app/start.sh && \
+    echo '  echo "⚠️  Agent stopped, restarting in 10s..."' >> /app/start.sh && \
+    echo '  sleep 10' >> /app/start.sh && \
+    echo 'done &' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
     echo 'sleep 2' >> /app/start.sh && \
-    echo 'echo "Starting nginx..."' >> /app/start.sh && \
+    echo '' >> /app/start.sh && \
+    echo '# Start nginx (foreground)' >> /app/start.sh && \
+    echo 'echo "🌐 Starting web server..."' >> /app/start.sh && \
+    echo 'echo "✅ ALL SERVICES RUNNING IN 24/7 MODE"' >> /app/start.sh && \
+    echo 'echo "========================================"' >> /app/start.sh && \
     echo 'nginx -g "daemon off;"' >> /app/start.sh && \
     chmod +x /app/start.sh
 
