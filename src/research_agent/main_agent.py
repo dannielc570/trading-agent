@@ -58,6 +58,42 @@ class ResearchAgent:
         
         logger.info("🤖 Research Agent initialized")
     
+    def save_strategy(self, strategy_data: Dict[str, Any]) -> int:
+        """Save a discovered strategy to the database"""
+        from ..database import get_db_context, Strategy
+        
+        try:
+            with get_db_context() as db:
+                # Check if strategy already exists
+                existing = db.query(Strategy).filter(
+                    Strategy.name == strategy_data['name']
+                ).first()
+                
+                if existing:
+                    logger.info(f"Strategy '{strategy_data['name']}' already exists (ID: {existing.id})")
+                    return existing.id
+                
+                # Create new strategy
+                strategy = Strategy(
+                    name=strategy_data['name'],
+                    description=strategy_data.get('description', '')[:500],  # Limit description
+                    category=strategy_data.get('category', 'discovered'),
+                    code=strategy_data.get('code', '# Strategy code'),
+                    parameters=strategy_data.get('parameters', {}),
+                    source_url=strategy_data.get('source_url'),
+                    status='discovered'
+                )
+                
+                db.add(strategy)
+                db.commit()
+                db.refresh(strategy)
+                
+                logger.success(f"✅ Saved NEW strategy: {strategy.name} (ID: {strategy.id})")
+                return strategy.id
+        except Exception as e:
+            logger.error(f"❌ Failed to save strategy '{strategy_data.get('name', 'unknown')}': {e}")
+            return 0
+    
     def evaluate_current_state(self) -> Dict[str, Any]:
         """Evaluate current platform state against goals"""
         logger.info("📊 Evaluating current state...")
