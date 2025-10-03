@@ -37,10 +37,12 @@ async def main():
         print("✅ Agent initialized successfully", flush=True)
         logger.info("✅ Agent initialized successfully")
         
-        print("🚀 Starting continuous operation (5-minute cycles)", flush=True)
-        logger.info("🚀 Starting continuous operation (5-minute cycles)")
+        print("⚡ Starting HIGH-SPEED continuous operation", flush=True)
+        print("🔥 Agent will run NON-STOP at maximum speed", flush=True)
+        print("📊 Dashboard updates every 5 seconds showing progress", flush=True)
+        logger.info("⚡ Starting HIGH-SPEED continuous operation")
         
-        await agent.run_forever(cycle_interval=300)  # 5 minutes instead of 1 hour
+        await agent.run_forever(cycle_interval=0)  # 0 = NO DELAYS, maximum speed!
         
     except KeyboardInterrupt:
         print("🛑 Agent stopped by user", flush=True)
