@@ -1,133 +1,107 @@
 #!/usr/bin/env python3
 """
-Continuously update dashboard data to JSON file
-Run this in the background to feed the live dashboard
+Dashboard data updater - generates dashboard_data.json from database
+Runs continuously to keep dashboard updated
 """
-
 import sys
+import os
+sys.path.insert(0, '.')
+os.environ['PYTHONUNBUFFERED'] = '1'
+
 import json
 import time
 from datetime import datetime
 
-sys.path.insert(0, '/project/workspace')
-
 from src.database import get_db_context, Strategy, Backtest, ScrapedContent
 
-def get_dashboard_data():
-    """Get all dashboard data"""
+def generate_dashboard_data():
+    """Generate dashboard data from database"""
     with get_db_context() as db:
-        # Get strategies
+        # Get all data
         strategies = db.query(Strategy).order_by(Strategy.created_at.desc()).all()
-        
-        # Get backtests
-        backtests = db.query(Backtest).order_by(Backtest.created_at.desc()).all()
-        
-        # Get scraped content
+        backtests = db.query(Backtest).order_by(Strategy.created_at.desc()).all()
         content = db.query(ScrapedContent).order_by(ScrapedContent.scraped_at.desc()).limit(20).all()
         
-        # Calculate stats
+        # Stats
         total_strategies = len(strategies)
         total_backtests = len(backtests)
-        total_content = len(content)
         
-        # Best Sharpe
-        sharpes = [b.sharpe_ratio for b in backtests if b.sharpe_ratio is not None]
+        sharpes = [b.sharpe_ratio for b in backtests if b.sharpe_ratio]
         best_sharpe = max(sharpes) if sharpes else 0
-        avg_sharpe = sum(sharpes) / len(sharpes) if sharpes else 0
+        avg_sharpe = sum(sharpes)/len(sharpes) if sharpes else 0
         
-        # Top 10 backtests
-        backtests_with_sharpe = [b for b in backtests if b.sharpe_ratio is not None]
-        backtests_with_sharpe.sort(key=lambda x: x.sharpe_ratio, reverse=True)
-        top_backtests = backtests_with_sharpe[:10]
+        # Top backtests
+        top = sorted([b for b in backtests if b.sharpe_ratio], 
+                    key=lambda x: x.sharpe_ratio, reverse=True)[:10]
         
-        # Recent strategies (last 10)
-        recent_strategies = strategies[:10]
-        
-        # Build data structure
-        data = {
+        return {
             "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "stats": {
                 "total_strategies": total_strategies,
                 "total_backtests": total_backtests,
-                "total_content": total_content,
+                "total_content": len(content),
                 "best_sharpe": round(best_sharpe, 2),
                 "avg_sharpe": round(avg_sharpe, 2)
             },
-            "top_backtests": [
-                {
-                    "rank": i + 1,
-                    "strategy": b.strategy.name,
-                    "asset": b.symbol,
-                    "sharpe": round(b.sharpe_ratio, 2),
-                    "return": round((b.total_return or 0) * 100, 2),
-                    "win_rate": round((b.win_rate or 0) * 100, 1),
-                    "max_drawdown": round((b.max_drawdown or 0) * 100, 2),
-                    "trades": b.total_trades or 0
-                }
-                for i, b in enumerate(top_backtests)
-            ],
-            "recent_strategies": [
-                {
-                    "name": s.name,
-                    "category": s.category or "N/A",
-                    "status": s.status,
-                    "created": s.created_at.strftime("%Y-%m-%d %H:%M") if s.created_at else "N/A"
-                }
-                for s in recent_strategies
-            ],
-            "all_strategies": [
-                {
-                    "name": s.name,
-                    "category": s.category or "N/A",
-                    "created": s.created_at.strftime("%Y-%m-%d %H:%M") if s.created_at else "N/A"
-                }
-                for s in strategies
-            ],
-            "recent_content": [
-                {
-                    "title": c.title or "Untitled",
-                    "url": c.source_url,
-                    "scraped": c.scraped_at.strftime("%Y-%m-%d %H:%M") if c.scraped_at else "N/A",
-                    "processed": c.processed,
-                    "strategy_created": c.strategy_created
-                }
-                for c in content
-            ]
+            "top_backtests": [{
+                "rank": i+1,
+                "strategy": b.strategy.name,
+                "asset": b.symbol,
+                "sharpe": round(b.sharpe_ratio, 2),
+                "return": round((b.total_return or 0)*100, 2),
+                "win_rate": round((b.win_rate or 0)*100, 1),
+                "max_drawdown": round((b.max_drawdown or 0)*100, 2),
+                "trades": b.total_trades or 0
+            } for i, b in enumerate(top)],
+            "recent_strategies": [{
+                "name": s.name,
+                "category": s.category or "N/A",
+                "status": s.status,
+                "created": s.created_at.strftime("%Y-%m-%d %H:%M") if s.created_at else "N/A"
+            } for s in strategies[:10]],
+            "all_strategies": [{
+                "name": s.name,
+                "category": s.category or "N/A",
+                "created": s.created_at.strftime("%Y-%m-%d %H:%M") if s.created_at else "N/A"
+            } for s in strategies]
         }
-        
-        return data
 
 def main():
-    """Main loop - update every 5 seconds"""
-    print("🔄 Starting dashboard data updater...")
-    print("📊 Updates every 5 seconds")
-    print("📁 Writing to: dashboard_data.json")
-    print("Press Ctrl+C to stop\n")
+    """Main update loop"""
+    print("🔄 Starting dashboard data updater...", flush=True)
+    print("📊 Updates every 2 seconds", flush=True)
+    print("📁 Writing to: dashboard_data.json", flush=True)
     
     update_count = 0
     
     try:
         while True:
-            try:
-                # Get fresh data
-                data = get_dashboard_data()
-                
-                # Write to JSON file
-                with open('dashboard_data.json', 'w') as f:
-                    json.dump(data, f, indent=2)
-                
-                update_count += 1
-                print(f"[{data['last_updated']}] Update #{update_count}: {data['stats']['total_strategies']} strategies, {data['stats']['total_backtests']} backtests")
-                
-            except Exception as e:
-                print(f"Error updating data: {e}")
+            update_count += 1
+            data = generate_dashboard_data()
             
-            # Wait 5 seconds
-            time.sleep(5)
+            # Write to both locations
+            for path in ['dashboard_data.json', '/app/dashboard_data.json']:
+                try:
+                    with open(path, 'w') as f:
+                        json.dump(data, f, indent=2)
+                except:
+                    pass
             
+            stats = data['stats']
+            print(f"[{data['last_updated']}] Update #{update_count}: "
+                  f"📊 {stats['total_strategies']} strategies, "
+                  f"🧪 {stats['total_backtests']} backtests, "
+                  f"📈 Sharpe: {stats['best_sharpe']:.2f}", flush=True)
+            
+            time.sleep(2)
+    
     except KeyboardInterrupt:
-        print("\n\n👋 Stopped updater.")
-        print(f"Total updates: {update_count}\n")
+        print("🛑 Dashboard updater stopped", flush=True)
+    except Exception as e:
+        print(f"❌ Dashboard updater crashed: {e}", flush=True)
+        import traceback
+        traceback.print_exc()
+        raise
 
 if __name__ == "__main__":
     main()
