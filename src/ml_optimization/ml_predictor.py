@@ -22,9 +22,22 @@ class MarketRegimeDetector:
             logger.error("scikit-learn not available")
             return
         
-        self.model = RandomForestClassifier(n_estimators=100, random_state=42)
-        self.scaler = StandardScaler()
+        # Lazy initialization to avoid sklearn import hang
+        self._model = None
+        self._scaler = None
         self.is_trained = False
+    
+    @property
+    def model(self):
+        if self._model is None and SKLEARN_AVAILABLE:
+            self._model = RandomForestClassifier(n_estimators=100, random_state=42)
+        return self._model
+    
+    @property
+    def scaler(self):
+        if self._scaler is None and SKLEARN_AVAILABLE:
+            self._scaler = StandardScaler()
+        return self._scaler
     
     def extract_features(self, data: pd.DataFrame) -> pd.DataFrame:
         """

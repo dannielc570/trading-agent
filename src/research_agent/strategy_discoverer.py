@@ -12,7 +12,8 @@ from loguru import logger
 import re
 
 from ..database import get_db_context, Strategy, ScrapedContent
-from ..data_collection import WebSearcher, GenericWebScraper, TVScraper, ScribdScraper
+from ..data_collection import WebSearcher, GenericWebScraper
+# TVScraper and ScribdScraper imported lazily in properties to avoid hangs
 # Note: Strategy classes are not imported here as discoverer only creates database entries
 
 
@@ -22,8 +23,23 @@ class StrategyDiscoverer:
     def __init__(self):
         self.searcher = WebSearcher()
         self.scraper = GenericWebScraper()
-        self.tv_scraper = TVScraper()
-        self.scribd_scraper = ScribdScraper()
+        # Lazy load these to avoid import hangs
+        self._tv_scraper = None
+        self._scribd_scraper = None
+    
+    @property
+    def tv_scraper(self):
+        if self._tv_scraper is None:
+            from ..data_collection import TVScraper
+            self._tv_scraper = TVScraper()
+        return self._tv_scraper
+    
+    @property
+    def scribd_scraper(self):
+        if self._scribd_scraper is None:
+            from ..data_collection import ScribdScraper
+            self._scribd_scraper = ScribdScraper()
+        return self._scribd_scraper
         
         # Known strategy patterns to detect
         self.strategy_patterns = {

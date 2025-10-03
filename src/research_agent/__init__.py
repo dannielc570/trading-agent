@@ -9,10 +9,8 @@ This module contains the main research agent that continuously:
 - Learns from outcomes
 """
 
-from .main_agent import ResearchAgent
-from .knowledge_base import KnowledgeBase
-from .strategy_discoverer import StrategyDiscoverer
-from .improvement_engine import ImprovementEngine
+# Lazy imports to avoid circular dependencies and hangs
+# Import these directly from submodules when needed
 
 __all__ = [
     "ResearchAgent",
