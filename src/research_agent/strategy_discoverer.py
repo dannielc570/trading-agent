@@ -60,6 +60,25 @@ class StrategyDiscoverer:
             'Fibonacci', 'Parabolic SAR', 'Williams %R'
         ]
     
+    async def discover_strategies(self, max_results: int = 10) -> List[Dict[str, Any]]:
+        """Discover new trading strategies from multiple sources
+        
+        This is the main entry point for strategy discovery.
+        Returns a list of strategy dictionaries ready to be saved.
+        """
+        logger.info("🔍 Discovering new trading strategies...")
+        
+        # First try web search
+        strategies = await self.search_for_strategies(max_results)
+        
+        # If web search fails or returns nothing, generate fallback strategies
+        if len(strategies) == 0:
+            logger.warning("⚠️ Web search returned no strategies, using fallback generation")
+            strategies = self.generate_fallback_strategies()
+        
+        logger.success(f"✅ Discovered {len(strategies)} strategies total")
+        return strategies[:max_results]
+    
     async def search_for_strategies(self, max_results: int = 20) -> List[Dict[str, Any]]:
         """Search the web, TradingView, and Scribd for trading strategies"""
         logger.info("🔍 Searching for new trading strategies from multiple sources...")

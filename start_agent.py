@@ -37,10 +37,10 @@ async def main():
         print("✅ Agent initialized successfully", flush=True)
         logger.info("✅ Agent initialized successfully")
         
-        print("🚀 Starting continuous operation (1-hour cycles)", flush=True)
-        logger.info("🚀 Starting continuous operation (1-hour cycles)")
+        print("🚀 Starting continuous operation (5-minute cycles)", flush=True)
+        logger.info("🚀 Starting continuous operation (5-minute cycles)")
         
-        await agent.run_forever(cycle_interval=3600)
+        await agent.run_forever(cycle_interval=300)  # 5 minutes instead of 1 hour
         
     except KeyboardInterrupt:
         print("🛑 Agent stopped by user", flush=True)
