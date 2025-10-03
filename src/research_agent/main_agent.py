@@ -150,10 +150,21 @@ class ResearchAgent:
         
         try:
             if action_type == 'discovery':
-                discovery_result = self.discoverer.run_discovery_cycle()
+                # Use discover_strategies (async) instead of run_discovery_cycle (sync)
+                new_strategies = await self.discoverer.discover_strategies(max_results=10)
+                
+                # Save discovered strategies to database
+                strategies_created = 0
+                for strategy_data in new_strategies:
+                    strategy_id = self.save_strategy(strategy_data)
+                    if strategy_id:
+                        strategies_created += 1
+                
                 result['success'] = True
-                result['details'] = discovery_result
-                self.state['total_strategies_added'] += discovery_result.get('strategies_created', 0)
+                result['details'] = {'strategies_created': strategies_created, 'total_found': len(new_strategies)}
+                self.state['total_strategies_added'] += strategies_created
+                
+                logger.info(f"✅ Discovery: Created {strategies_created} strategies from {len(new_strategies)} found")
             
             elif action_type == 'optimization' or action_type == 'improvement':
                 improvement_result = await self.improver.run_improvement_cycle()
