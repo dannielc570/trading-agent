@@ -22,62 +22,26 @@ COPY . .
 # Create data directory
 RUN mkdir -p /app/data
 
-# Configure nginx for dashboard
-RUN echo 'server { \
-    listen 8080; \
-    root /app; \
-    location / { \
-        try_files /live_dashboard.html =404; \
-    } \
-    location /dashboard_data.json { \
-        alias /app/data/dashboard_data.json; \
-        add_header Cache-Control "no-cache, no-store, must-revalidate"; \
-    } \
-}' > /etc/nginx/sites-available/default
+# Configure nginx
+RUN echo 'server { listen 8080; root /app; location / { try_files /live_dashboard.html =404; } location /dashboard_data.json { alias /app/data/dashboard_data.json; add_header Cache-Control "no-cache"; } }' > /etc/nginx/sites-available/default
 
-# Expose port
 EXPOSE 8080
 
-# Create startup script with proper logging
-RUN echo '#!/bin/bash\n\
-set -e\n\
-\n\
-# Initialize database\n\
-echo "========================================"\n\
-echo "Initializing database..."\n\
-echo "========================================"\n\
-python init_database.py || { echo "Database init failed!"; exit 1; }\n\
-\n\
-# Start autonomous agent in background WITH LOGGING\n\
-echo "========================================"\n\
-echo "Starting autonomous research agent..."\n\
-echo "========================================"\n\
-python -u start_agent.py 2>&1 | tee -a /tmp/agent.log &\n\
-AGENT_PID=$!\n\
-echo "Agent PID: $AGENT_PID"\n\
-sleep 2\n\
-\n\
-# Check if agent is still running\n\
-if kill -0 $AGENT_PID 2>/dev/null; then\n\
-    echo "✅ Agent started successfully (PID: $AGENT_PID)"\n\
-else\n\
-    echo "❌ Agent failed to start! Check logs:"\n\
-    cat /tmp/agent.log\n\
-    exit 1\n\
-fi\n\
-\n\
-# Start dashboard updater in background\n\
-echo "========================================"\n\
-echo "Starting dashboard updater..."\n\
-echo "========================================"\n\
-python -u update_dashboard_data.py 2>&1 &\n\
-\n\
-# Start nginx for dashboard\n\
-echo "========================================"\n\
-echo "Starting web dashboard..."\n\
-echo "========================================"\n\
-nginx -g "daemon off;"\n\
-' > /app/start.sh && chmod +x /app/start.sh
+# Startup script
+RUN echo '#!/bin/bash' > /app/start.sh && \
+    echo 'set -e' >> /app/start.sh && \
+    echo 'echo "Initializing database..."' >> /app/start.sh && \
+    echo 'python init_database.py' >> /app/start.sh && \
+    echo 'echo "Bootstrapping data..."' >> /app/start.sh && \
+    echo 'python bootstrap_data.py' >> /app/start.sh && \
+    echo 'echo "Starting dashboard updater..."' >> /app/start.sh && \
+    echo 'python -u update_dashboard_data.py &' >> /app/start.sh && \
+    echo 'sleep 3' >> /app/start.sh && \
+    echo 'echo "Starting agent..."' >> /app/start.sh && \
+    echo 'python -u start_agent.py &' >> /app/start.sh && \
+    echo 'sleep 2' >> /app/start.sh && \
+    echo 'echo "Starting nginx..."' >> /app/start.sh && \
+    echo 'nginx -g "daemon off;"' >> /app/start.sh && \
+    chmod +x /app/start.sh
 
-# Start all services
 CMD ["/app/start.sh"]
