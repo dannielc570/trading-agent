@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head><title>Dashboard Test</title></head>
+<body>
+    <div id="result">Testing...</div>
+    <script>
+        const data = {
+            strategies: { total: 4 },
+            backtests: { total: 3 },
+            performance: { best_sharpe: 1.56 }
+        };
+        document.getElementById('result').textContent = 
+            `Strategies: ${data.strategies.total}, Backtests: ${data.backtests.total}, Sharpe: ${data.performance.best_sharpe}`;
+    </script>
+</body>
+</html>

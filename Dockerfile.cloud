@@ -22,8 +22,9 @@ COPY . .
 # Create data directory
 RUN mkdir -p /app/data
 
-# Configure nginx to serve index.html with embedded data
-RUN echo 'server { listen 8080; root /app; location / { try_files /index.html =404; } location /dashboard_data.json { alias /app/data/dashboard_data.json; add_header Cache-Control "no-cache"; } }' > /etc/nginx/sites-available/default
+# Configure nginx to serve index.html ONLY (delete old dashboards to prevent confusion)
+RUN rm -f /app/live_dashboard.html /app/dashboard.html && \
+    echo 'server { listen 8080; root /app; location / { try_files /index.html /index.html; } location /dashboard_data.json { alias /app/data/dashboard_data.json; add_header Cache-Control "no-cache"; } }' > /etc/nginx/sites-available/default
 
 EXPOSE 8080
 
