@@ -19,7 +19,7 @@ def generate_dashboard_data():
     with get_db_context() as db:
         # Get all data
         strategies = db.query(Strategy).order_by(Strategy.created_at.desc()).all()
-        backtests = db.query(Backtest).order_by(Strategy.created_at.desc()).all()
+        backtests = db.query(Backtest).order_by(Backtest.created_at.desc()).all()
         content = db.query(ScrapedContent).order_by(ScrapedContent.scraped_at.desc()).limit(20).all()
         
         # Stats
