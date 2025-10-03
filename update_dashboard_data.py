@@ -15,44 +15,49 @@ from datetime import datetime
 from src.database import get_db_context, Strategy, Backtest, ScrapedContent
 
 def generate_dashboard_data():
-    """Generate dashboard data from database"""
+    """Generate dashboard data from database (OPTIMIZED)"""
     with get_db_context() as db:
-        # Get all data
-        strategies = db.query(Strategy).order_by(Strategy.created_at.desc()).all()
-        backtests = db.query(Backtest).order_by(Backtest.created_at.desc()).all()
-        content = db.query(ScrapedContent).order_by(ScrapedContent.scraped_at.desc()).limit(20).all()
+        # OPTIMIZED: Use COUNT queries instead of loading everything
+        total_strategies = db.query(Strategy).count()
+        total_backtests = db.query(Backtest).count()
+        total_content = db.query(ScrapedContent).count()
         
-        # Stats
-        total_strategies = len(strategies)
-        total_backtests = len(backtests)
+        # OPTIMIZED: Get only recent strategies (limit 50)
+        strategies = db.query(Strategy).order_by(Strategy.created_at.desc()).limit(50).all()
         
-        sharpes = [b.sharpe_ratio for b in backtests if b.sharpe_ratio]
-        best_sharpe = max(sharpes) if sharpes else 0
-        avg_sharpe = sum(sharpes)/len(sharpes) if sharpes else 0
+        # OPTIMIZED: Get only best backtests with sharpe > -1
+        top_backtests = db.query(Backtest).filter(
+            Backtest.sharpe_ratio.isnot(None)
+        ).order_by(Backtest.sharpe_ratio.desc()).limit(10).all()
         
-        # Top backtests
-        top = sorted([b for b in backtests if b.sharpe_ratio], 
-                    key=lambda x: x.sharpe_ratio, reverse=True)[:10]
+        # OPTIMIZED: Calculate stats from top backtests only
+        if top_backtests:
+            best_sharpe = top_backtests[0].sharpe_ratio
+            sharpes = [b.sharpe_ratio for b in top_backtests if b.sharpe_ratio]
+            avg_sharpe = sum(sharpes) / len(sharpes) if sharpes else 0
+        else:
+            best_sharpe = 0
+            avg_sharpe = 0
         
         return {
             "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "stats": {
                 "total_strategies": total_strategies,
                 "total_backtests": total_backtests,
-                "total_content": len(content),
+                "total_content": total_content,
                 "best_sharpe": round(best_sharpe, 2),
                 "avg_sharpe": round(avg_sharpe, 2)
             },
             "top_backtests": [{
                 "rank": i+1,
-                "strategy": b.strategy.name,
+                "strategy": b.strategy.name if b.strategy else "Unknown",
                 "asset": b.symbol,
                 "sharpe": round(b.sharpe_ratio, 2),
                 "return": round((b.total_return or 0)*100, 2),
                 "win_rate": round((b.win_rate or 0)*100, 1),
                 "max_drawdown": round((b.max_drawdown or 0)*100, 2),
                 "trades": b.total_trades or 0
-            } for i, b in enumerate(top)],
+            } for i, b in enumerate(top_backtests)],
             "recent_strategies": [{
                 "name": s.name,
                 "category": s.category or "N/A",

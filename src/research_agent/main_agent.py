@@ -178,10 +178,36 @@ class ResearchAgent:
         return actions
     
     async def execute_action(self, action: Dict[str, Any]) -> Dict[str, Any]:
-        """Execute a single action"""
+        """Execute a single action with timeout handling"""
         action_type = action['type']
         logger.info(f"⚡ Executing action: {action_type} ({action['priority']} priority)")
         
+        result = {'action': action_type, 'success': False}
+        
+        # Timeout for actions (5 minutes max)
+        action_timeout = 300
+        
+        try:
+            # Wrap action execution with timeout
+            result_data = await asyncio.wait_for(
+                self._execute_action_internal(action),
+                timeout=action_timeout
+            )
+            result.update(result_data)
+            
+        except asyncio.TimeoutError:
+            logger.error(f"❌ Action {action_type} timed out after {action_timeout}s")
+            result['error'] = f'timeout after {action_timeout}s'
+            result['success'] = False
+        except Exception as e:
+            logger.error(f"❌ Action {action_type} failed: {e}")
+            result['error'] = str(e)
+        
+        return result
+    
+    async def _execute_action_internal(self, action: Dict[str, Any]) -> Dict[str, Any]:
+        """Internal action execution (called with timeout)"""
+        action_type = action['type']
         result = {'action': action_type, 'success': False}
         
         try:
